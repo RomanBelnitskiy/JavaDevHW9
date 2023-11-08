@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Current Time</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <link rel="stylesheet" type="text/css" media="all" href="../../css/styles.css" th:href="@{/css/styles.css}" />
+    </head>
+    <body>
+        <div class="center time-font">
+            Today is: <span th:text="${today.format(df)}">11 October 2023</span>
+        </div>
+    </body>
+</html>
