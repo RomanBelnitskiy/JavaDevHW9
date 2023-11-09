@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -62,24 +61,27 @@ public class TimeServlet extends HttpServlet {
     }
 
     private ZoneId getZoneId(HttpServletRequest request) {
-        String timezone = request.getParameter("timezone");
-        ZoneId zoneId = ZoneId.of("Etc/UTC");
-        Optional<Cookie> cookieOptional = getLastTimezoneCookie(request);
-
-        if (timezone != null && !timezone.isEmpty()) {
-            timezone = timezone.replace(" ", "+");
-            zoneId = ZoneId.of(timezone);
-        } else if (cookieOptional.isPresent()) {
-            Cookie timezoneCookie = cookieOptional.get();
-            timezone = timezoneCookie.getValue();
-            zoneId = ZoneId.of(timezone);
+        Object zoneIdObject = request.getAttribute("zoneId");
+        if (zoneIdObject != null) {
+            return (ZoneId) zoneIdObject;
         }
 
-        return zoneId;
+        Optional<Cookie> cookieOptional = getLastTimezoneCookie(request);
+        if (cookieOptional.isPresent()) {
+            Cookie timezoneCookie = cookieOptional.get();
+            String timezone = timezoneCookie.getValue();
+            return ZoneId.of(timezone);
+        }
+
+        return ZoneId.of("Etc/UTC");
     }
 
     private Optional<Cookie> getLastTimezoneCookie(HttpServletRequest request) {
-        return Arrays.stream(request.getCookies())
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null || cookies.length == 0) {
+            return Optional.empty();
+        }
+        return Arrays.stream(cookies)
                 .filter(cookie -> "lastTimezone".equals(cookie.getName()))
                 .findFirst();
     }
